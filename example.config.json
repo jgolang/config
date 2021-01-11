@@ -1,0 +1,80 @@
+{
+    "mode": "DEV",
+    "general": {
+        "app_version": "1.0.0",
+        "session_life_time": "1h",
+        "port": 9001
+    },
+    "services": {
+        "service_auth": {
+            "port": 9091
+        },
+        "service_test": {
+            "port": 9092
+        },
+        "logger": {
+            "port": 9021,
+            "events": {
+                "path": "./logger/events"
+            },
+            "logs": {
+                "path": "./logger/logs"
+            }
+        }
+    },
+    "databases": {
+        "test": {
+            "id": 0,
+            "description": "test",
+            "database": "test",
+            "user": "test",
+            "password": "test",
+            "server": "localhost",
+            "port": 3306
+        }
+    },
+    "messages": {
+        "default": {
+            "title": "Operación",
+            "error": "¡Lo sentimos!",
+            "error_description": "Ha ocurrido un error intentalo nuevamente.",
+            "invalid_session": "La sesión es inválida o ha sido caducada."
+        }
+    },
+    "cache": {
+        "host": "localhost:6397",
+        "user": "test",
+        "password": "test"
+    },
+    "storage": {},
+    "integrations": {
+        "google": {
+            "params": {
+                "app_id": "4c2687a0-f3c4-468f-fc1b34ff61e0",
+                "key": "NjY2NjI1MDgtYTgyYzI1OTRjOGVi"
+            },
+            "add_device": {
+                "endpoint": "https://google/api/v1/example_one",
+                "timeout": 20
+            },
+            "send_message": {
+                "endpoint": "https://google/api/v1/example_two",
+                "timeout": 20
+            }
+        },
+        "apple": {
+            "endpoint": "https://apple/api/v1/example_one",
+            "timeout": 20
+        },
+        "logger": {
+            "events": {
+                "endpoint": "http://localhost:9021/logger/events",
+                "timeout": 20
+            },
+            "logs": {
+                "endpoint": "http://localhost:9021/logger/logs",
+                "timeout": 20
+            }
+        }
+    }
+}
