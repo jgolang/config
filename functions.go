@@ -1,51 +1,81 @@
 package config
 
-import (
-	"fmt"
-
-	"github.com/jgolang/sirius"
-)
-
-// GetString ...
+// GetString gets a string json node from a json key.
+// JSON key example: 'foo.bar'
 func GetString(key string) string {
-	return sjson.GetString(key)
-}
-
-// GetInt64 doc ...
-func GetInt64(key string) int64 {
-	return sjson.GetInt64(key)
-}
-
-// GetInt doc ...
-func GetInt(key string) int {
-	return sjson.GetInt(key)
-}
-
-// GetFloat64 doc ...
-func GetFloat64(key string) float64 {
-	return sjson.GetFloat64(key)
-}
-
-// GetBool doc ...
-func GetBool(key string) bool {
-	return sjson.GetBool(key)
-}
-
-// Get doc ...
-func Get(key string) interface{} {
-	return sjson.Get(key)
-}
-
-// GetArrayMaps doc ...
-func GetArrayMaps(key string) []map[string]interface{} {
-	return sjson.GetArrayMaps(key)
-}
-
-// LoadFileConfig load a custom json file config
-func LoadFileConfig(name string) {
-	var err error
-	sjson, err = sirius.Open(name)
+	err := ValidateConfiguratorRegister()
 	if err != nil {
-		panic(fmt.Errorf("Fatal error reading config file: %s", err))
+		return ""
 	}
+	return configurator.GetString(key)
+}
+
+// GetInt64 gets an integer 64 json node from a json key.
+// JSON key example: 'foo.bar'
+func GetInt64(key string) int64 {
+	err := ValidateConfiguratorRegister()
+	if err != nil {
+		return 0
+	}
+	return configurator.GetInt64(key)
+}
+
+// GetInt gets an integer json node from a json key.
+// JSON key example: 'foo.bar'
+func GetInt(key string) int {
+	err := ValidateConfiguratorRegister()
+	if err != nil {
+		return 0
+	}
+	return configurator.GetInt(key)
+}
+
+// GetFloat64 gets a float 64 json node from a json key.
+// JSON key example: 'foo.bar'
+func GetFloat64(key string) float64 {
+	err := ValidateConfiguratorRegister()
+	if err != nil {
+		return 0
+	}
+	return configurator.GetFloat64(key)
+}
+
+// GetBool gets a bool json node from a json key.
+// JSON key example: 'foo.bar'
+func GetBool(key string) bool {
+	err := ValidateConfiguratorRegister()
+	if err != nil {
+		return false
+	}
+	return configurator.GetBool(key)
+}
+
+// Get gets a json node from a json key.
+// JSON key example: 'foo.bar'
+func Get(key string) interface{} {
+	err := ValidateConfiguratorRegister()
+	if err != nil {
+		return nil
+	}
+	return configurator.Get(key)
+}
+
+// GetArrayMaps gets a array json node from a json key. Returns
+// a json array as map.
+// JSON key example: 'foo.bar'
+func GetArrayMaps(key string) []map[string]interface{} {
+	err := ValidateConfiguratorRegister()
+	if err != nil {
+		return nil
+	}
+	return configurator.GetArrayMaps(key)
+}
+
+// LoadConfigFile Open file that contins a json object.
+func LoadConfigFile(name string) error {
+	err := ValidateConfiguratorRegister()
+	if err != nil {
+		return err
+	}
+	return configurator.Open(name)
 }
