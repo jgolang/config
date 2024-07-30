@@ -9,7 +9,7 @@ The `config` package provides a set of functions for working with JSON configura
 To install the `config` package, use the following command:
 
 ```bash
-go get github.com/yourusername/config
+go get github.com/jgolang/config
 ```
 
 ## Usage
@@ -22,7 +22,7 @@ package main
 import (
     "fmt"
     "log"
-    "github.com/yourusername/config"
+    "github.com/jgolang/config"
 )
 
 func main() {
