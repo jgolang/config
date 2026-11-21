@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"sync"
 )
 
 // FileName file name that contain a json object.
@@ -16,16 +17,34 @@ var FileName string = "config.json"
 // change it; use LoadConfigFile to load another file.
 var FilePath string = "./"
 
-var configurator Configurator
+var (
+	// configuratorMutex guards configurator, which RegisterConfigurator may
+	// replace while other goroutines read configuration.
+	configuratorMutex sync.RWMutex
+	configurator      Configurator
+)
 
 // RegisterConfigurator a new implement of Configurator interface
 func RegisterConfigurator(conf Configurator) {
+	configuratorMutex.Lock()
+	defer configuratorMutex.Unlock()
 	configurator = conf
+}
+
+// registeredConfigurator returns the current Configurator, or nil.
+func registeredConfigurator() Configurator {
+	configuratorMutex.RLock()
+	defer configuratorMutex.RUnlock()
+	return configurator
 }
 
 // ValidateConfiguratorRegister validate if the Configurator interfaces has been implement
 func ValidateConfiguratorRegister() error {
-	if configurator != nil {
+	return validateConfigurator(registeredConfigurator())
+}
+
+func validateConfigurator(conf Configurator) error {
+	if conf != nil {
 		return nil
 	}
 	return fmt.Errorf("the implementation of the 'config.Configurator' interface has not been registered")

@@ -153,6 +153,8 @@ Opens a file that contains a JSON object.
 
 If the file cannot be opened or parsed, `LoadConfigFile` returns the error and keeps the previously loaded configuration. While no configuration is loaded, every getter returns its zero value (`""`, `0`, `false`, `nil`).
 
+`LoadConfigFile` and `RegisterConfigurator` are safe to call while other goroutines read the configuration. With the built-in `JSONConfigurator`, each getter call sees either the previous or the new configuration; two calls in a row can straddle a reload. A custom `Configurator` must be safe for concurrent use itself.
+
 ## Example
 
 Here’s an example configuration file (`config.json`):
