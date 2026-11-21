@@ -7,6 +7,7 @@ import (
 	"github.com/jgolang/sirius"
 )
 
+// sjson is the loaded document; nil until a load succeeds.
 var sjson *sirius.SJson
 
 // JSONConfigurator implement interface provider.
@@ -15,36 +16,54 @@ type JSONConfigurator struct{}
 // GetString gets a string json node from a json key.
 // JSON key example: 'foo.bar'
 func (conf JSONConfigurator) GetString(key string) string {
+	if sjson == nil {
+		return ""
+	}
 	return sjson.GetString(key)
 }
 
 // GetInt64 gets an integer 64 json node from a json key.
 // JSON key example: 'foo.bar'
 func (conf JSONConfigurator) GetInt64(key string) int64 {
+	if sjson == nil {
+		return 0
+	}
 	return sjson.GetInt64(key)
 }
 
 // GetInt gets an integer json node from a json key.
 // JSON key example: 'foo.bar'
 func (conf JSONConfigurator) GetInt(key string) int {
+	if sjson == nil {
+		return 0
+	}
 	return sjson.GetInt(key)
 }
 
 // GetFloat64 gets a float 64 json node from a json key.
 // JSON key example: 'foo.bar'
 func (conf JSONConfigurator) GetFloat64(key string) float64 {
+	if sjson == nil {
+		return 0
+	}
 	return sjson.GetFloat64(key)
 }
 
 // GetBool gets a bool json node from a json key.
 // JSON key example: 'foo.bar'
 func (conf JSONConfigurator) GetBool(key string) bool {
+	if sjson == nil {
+		return false
+	}
 	return sjson.GetBool(key)
 }
 
 // Get gets a json node from a json key.
 // JSON key example: 'foo.bar'
 func (conf JSONConfigurator) Get(key string) interface{} {
+	if sjson == nil {
+		return nil
+	}
 	return sjson.Get(key)
 }
 
@@ -52,6 +71,9 @@ func (conf JSONConfigurator) Get(key string) interface{} {
 // a json array as map.
 // JSON key example: 'foo.bar'
 func (conf JSONConfigurator) GetArrayMaps(key string) []map[string]interface{} {
+	if sjson == nil {
+		return nil
+	}
 	return sjson.GetArrayMaps(key)
 }
 
@@ -63,10 +85,12 @@ func (conf JSONConfigurator) Open(name string) error {
 			name = elements[1]
 		}
 	}
-	var err error
-	sjson, err = sirius.Open(name)
+	// Replace the loaded document only on success, so a failed load keeps
+	// the previous configuration.
+	document, err := sirius.Open(name)
 	if err != nil {
 		return err
 	}
+	sjson = document
 	return nil
 }
