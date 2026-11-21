@@ -41,6 +41,24 @@ func main() {
 }
 ```
 
+## Import-time load
+
+Importing the package loads `./config.json` (`FilePath` + `FileName`), resolved against the process's **current working directory**, unless a `--config-file=<path>` argument is passed to the program (see `LoadConfigFile`). `FilePath` and `FileName` cannot change this load, because it runs before your code. Do not start the program from a directory that untrusted users can write to.
+
+If the import-time load fails (for example, the file does not exist), importing the package no longer panics: `AutoloadError()` returns the error. To keep failing fast, check it at startup:
+
+```go
+if err := config.AutoloadError(); err != nil {
+    log.Fatalf("Failed to load config.json: %v", err)
+}
+```
+
+To disable the import-time load, build with the `config_noautoload` tag and load your file explicitly with `LoadConfigFile`:
+
+```bash
+go build -tags config_noautoload ./...
+```
+
 ## Functions
 
 The `config` package provides several functions to retrieve data from a JSON configuration file.
