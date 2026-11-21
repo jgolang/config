@@ -45,7 +45,7 @@ func main() {
 
 Importing the package loads `./config.json` (`FilePath` + `FileName`), resolved against the process's **current working directory**, unless a `--config-file=<path>` argument is passed to the program (see `LoadConfigFile`). `FilePath` and `FileName` cannot change this load, because it runs before your code. Do not start the program from a directory that untrusted users can write to.
 
-If the import-time load fails (for example, the file does not exist), importing the package no longer panics: `AutoloadError()` returns the error. To keep failing fast, check it at startup:
+If the import-time load fails (for example, the file does not exist), importing the package no longer panics: the getters return zero values until a file is loaded, and `AutoloadError()` returns the error. To keep failing fast, check it at startup:
 
 ```go
 if err := config.AutoloadError(); err != nil {
@@ -149,7 +149,9 @@ func LoadConfigFile(name string) error
 Opens a file that contains a JSON object.
 
 - **name**: The name of the JSON file.
-- **Returns**: An error if the file cannot be opened.
+- **Returns**: An error if the file cannot be opened or parsed.
+
+If the file cannot be opened or parsed, `LoadConfigFile` returns the error and keeps the previously loaded configuration. While no configuration is loaded, every getter returns its zero value (`""`, `0`, `false`, `nil`).
 
 ## Example
 
