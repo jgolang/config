@@ -151,6 +151,15 @@ Opens a file that contains a JSON object.
 - **name**: The name of the JSON file.
 - **Returns**: An error if the file cannot be opened or parsed.
 
+**`--config-file` argument.** By default, if the program was started with a `--config-file=<path>` argument, `LoadConfigFile` (and the import-time load) opens that path instead of `name`, without telling the caller. The whole value after the first `=` is the path. Anyone who controls the program's arguments can therefore choose the configuration file. To always load the path you pass, register the configurator with `IgnoreCommandLine` before loading (the import-time load runs earlier and still honors the argument; build with `-tags config_noautoload` to disable it):
+
+```go
+config.RegisterConfigurator(config.JSONConfigurator{IgnoreCommandLine: true})
+if err := config.LoadConfigFile("/etc/myapp/config.json"); err != nil {
+    log.Fatalf("Failed to load config: %v", err)
+}
+```
+
 If the file cannot be opened or parsed, `LoadConfigFile` returns the error and keeps the previously loaded configuration. While no configuration is loaded, every getter returns its zero value (`""`, `0`, `false`, `nil`).
 
 `LoadConfigFile` and `RegisterConfigurator` are safe to call while other goroutines read the configuration. With the built-in `JSONConfigurator`, each getter call sees either the previous or the new configuration; two calls in a row can straddle a reload. A custom `Configurator` must be safe for concurrent use itself.

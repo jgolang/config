@@ -24,7 +24,16 @@ func loadedDocument() *sirius.SJson {
 }
 
 // JSONConfigurator implement interface provider.
-type JSONConfigurator struct{}
+//
+// By default, Open loads the file named by a "--config-file=<path>" program
+// argument instead of the name it receives, when that argument is present.
+// Set IgnoreCommandLine to always load the given name:
+//
+//	config.RegisterConfigurator(config.JSONConfigurator{IgnoreCommandLine: true})
+type JSONConfigurator struct {
+	// IgnoreCommandLine makes Open ignore the "--config-file=" argument.
+	IgnoreCommandLine bool
+}
 
 // GetString gets a string json node from a json key.
 // JSON key example: 'foo.bar'
@@ -97,12 +106,15 @@ func (conf JSONConfigurator) GetArrayMaps(key string) []map[string]interface{} {
 	return document.GetArrayMaps(key)
 }
 
-// Open file that contins a json object.
+// Open file that contains a json object. Unless IgnoreCommandLine is set, a
+// "--config-file=<path>" program argument replaces name.
 func (conf JSONConfigurator) Open(name string) error {
-	for _, arg := range os.Args {
-		if strings.HasPrefix(arg, "--config-file=") {
-			elements := strings.Split(arg, "=")
-			name = elements[1]
+	if !conf.IgnoreCommandLine {
+		for _, arg := range os.Args {
+			// Cut at the first "=" only, so the path itself may contain "=".
+			if path, found := strings.CutPrefix(arg, "--config-file="); found {
+				name = path
+			}
 		}
 	}
 	// Replace the loaded document only on success, so a failed load keeps
