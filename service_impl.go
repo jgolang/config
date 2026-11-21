@@ -3,12 +3,25 @@ package config
 import (
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/jgolang/sirius"
 )
 
-// sjson is the loaded document; nil until a load succeeds.
-var sjson *sirius.SJson
+var (
+	// documentMutex guards sjson, which a reload may replace while other
+	// goroutines read it. The SJson itself is read-only once opened.
+	documentMutex sync.RWMutex
+	// sjson is the loaded document; nil until a load succeeds.
+	sjson *sirius.SJson
+)
+
+// loadedDocument returns the current document, or nil when none is loaded.
+func loadedDocument() *sirius.SJson {
+	documentMutex.RLock()
+	defer documentMutex.RUnlock()
+	return sjson
+}
 
 // JSONConfigurator implement interface provider.
 type JSONConfigurator struct{}
@@ -16,65 +29,72 @@ type JSONConfigurator struct{}
 // GetString gets a string json node from a json key.
 // JSON key example: 'foo.bar'
 func (conf JSONConfigurator) GetString(key string) string {
-	if sjson == nil {
+	document := loadedDocument()
+	if document == nil {
 		return ""
 	}
-	return sjson.GetString(key)
+	return document.GetString(key)
 }
 
 // GetInt64 gets an integer 64 json node from a json key.
 // JSON key example: 'foo.bar'
 func (conf JSONConfigurator) GetInt64(key string) int64 {
-	if sjson == nil {
+	document := loadedDocument()
+	if document == nil {
 		return 0
 	}
-	return sjson.GetInt64(key)
+	return document.GetInt64(key)
 }
 
 // GetInt gets an integer json node from a json key.
 // JSON key example: 'foo.bar'
 func (conf JSONConfigurator) GetInt(key string) int {
-	if sjson == nil {
+	document := loadedDocument()
+	if document == nil {
 		return 0
 	}
-	return sjson.GetInt(key)
+	return document.GetInt(key)
 }
 
 // GetFloat64 gets a float 64 json node from a json key.
 // JSON key example: 'foo.bar'
 func (conf JSONConfigurator) GetFloat64(key string) float64 {
-	if sjson == nil {
+	document := loadedDocument()
+	if document == nil {
 		return 0
 	}
-	return sjson.GetFloat64(key)
+	return document.GetFloat64(key)
 }
 
 // GetBool gets a bool json node from a json key.
 // JSON key example: 'foo.bar'
 func (conf JSONConfigurator) GetBool(key string) bool {
-	if sjson == nil {
+	document := loadedDocument()
+	if document == nil {
 		return false
 	}
-	return sjson.GetBool(key)
+	return document.GetBool(key)
 }
 
 // Get gets a json node from a json key.
 // JSON key example: 'foo.bar'
 func (conf JSONConfigurator) Get(key string) interface{} {
-	if sjson == nil {
+	document := loadedDocument()
+	if document == nil {
 		return nil
 	}
-	return sjson.Get(key)
+	return document.Get(key)
 }
 
 // GetArrayMaps gets a array json node from a json key. Returns
 // a json array as map.
 // JSON key example: 'foo.bar'
 func (conf JSONConfigurator) GetArrayMaps(key string) []map[string]interface{} {
-	if sjson == nil {
+	document := loadedDocument()
+	if document == nil {
 		return nil
 	}
-	return sjson.GetArrayMaps(key)
+	return document.GetArrayMaps(key)
 }
 
 // Open file that contins a json object.
@@ -91,6 +111,8 @@ func (conf JSONConfigurator) Open(name string) error {
 	if err != nil {
 		return err
 	}
+	documentMutex.Lock()
 	sjson = document
+	documentMutex.Unlock()
 	return nil
 }
