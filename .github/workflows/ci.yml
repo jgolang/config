@@ -1,0 +1,35 @@
+name: ci
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        go: [oldstable, stable]
+    runs-on: ubuntu-latest
+    env:
+      GOTOOLCHAIN: local
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
+        with:
+          go-version: ${{ matrix.go }}
+          check-latest: true
+      - name: gofmt (root)
+        run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+      - name: vet (root)
+        run: go vet ./...
+      - name: test (root)
+        run: go test -race -cover ./...
+      - name: test (config_noautoload)
+        run: go test -race -tags config_noautoload ./...
+      - name: govulncheck (root)
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.10.0 ./...
